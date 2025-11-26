@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+
+<body>
+    <p>hi this is chat bot</p>
+    <script>
+        async function askBot(userMessage) {
+            const apiUrl = "http://127.0.0.1:8000/chat";
+
+            try {
+                const response = await fetch(apiUrl, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    // We convert our data to JSON string
+                    body: JSON.stringify({ message: userMessage })
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const data = await response.json();
+
+                // This prints the bot's answer
+                console.log("Bot says:", data.response);
+                return data.response;
+
+            } catch (error) {
+                console.error("Error talking to bot:", error);
+            }
+        }
+
+        // Example usage:
+        askBot("What is the weather in London?");
+    </script>
+</body>
+
+</html>
