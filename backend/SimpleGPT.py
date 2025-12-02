@@ -52,9 +52,24 @@ class SimpleGPT:
         self.agent = create_react_agent(self.llm, tools=self.tools)
         
         self.system_prompt = "You are a helpful and enthusiastic assistant. You always answer in a friendly tone."
+        self.count10=1
         
+    def Summarize(self):
+        msg=self.memory_manager.get_summary()+"\n"+self.memory_manager.last10msg()+"\n"+"From all of the above, extract personal info and important facts about the user that should be persisted for future conversations.object with keys like name, preferences, important_dates, and any other relevant facts."
+        messages = [
+            SystemMessage(content=self.system_prompt),
+            HumanMessage(content=msg)
+        ]
+        # The agent returns a dictionary with the state, including 'messages'
+        result = self.agent.invoke({"messages": messages})
+        
+        # The last message in the list is the final response from the assistant
+        last_message = result["messages"][-1]
+        self.memory_manager.store_summary(last_message.content,last_message.response_metadata)
+
+
     def generate_response(self, user_input):
-        msg=self.memory_manager.last10msg()+'\n'+user_input
+        msg=self.memory_manager.get_summary()+"\n"+self.memory_manager.last10msg()+'\n'+user_input
         messages = [
             SystemMessage(content=self.system_prompt),
             HumanMessage(content=msg)
@@ -65,7 +80,13 @@ class SimpleGPT:
         
         # The last message in the list is the final response from the assistant
         last_message = result["messages"][-1]
+
         self.memory_manager.storeMSG(user_input, last_message.content,last_message.response_metadata)
+        self.count10+=1
+        if self.count10==10:
+            self.Summarize()
+            self.count10=1
+
         return last_message
 
 def main():

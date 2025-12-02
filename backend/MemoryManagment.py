@@ -5,6 +5,7 @@ class memoryManager:
     def __init__(self):
         self.connection_str="mongodb+srv://AI_db:bjHIZzJR2oXjss9o@cluster0.ylzlj16.mongodb.net/?retryWrites=true&w=majority"
 
+
     def last10msg(self, thread_id=0):
         memory = ""
         client = MongoClient(self.connection_str)
@@ -22,6 +23,15 @@ class memoryManager:
             memory += "User: " + str(doc.get("user")) + "\nAssistant: " + str(doc.get("assistant")) + "\n"
         return memory
 
+    def get_summary(self, thread_id=0):
+        client = MongoClient(self.connection_str)
+        db = client["ChatHistory"]
+        collection = db["ChatHistory"+str(thread_id)]
+        cursor = collection.find_one({"_id": "summary"})
+        if cursor:
+            return cursor.get("summary")
+        return ""
+        
     def storeMSG(self, user_input, assistant_response, metadata, thread_id=0):
         client = MongoClient(self.connection_str)
         db = client["ChatHistory"]
@@ -34,6 +44,21 @@ class memoryManager:
             "timestamp": datetime.datetime.utcnow()
         }
         collection.insert_one(document)
+            
+
+    def store_summary(self,summary,metadata,thread_id=0):
+        client = MongoClient(self.connection_str)
+        db = client["ChatHistory"]
+        collection = db["ChatHistory"+str(thread_id)]
+        filter_doc = {"_id": "summary"}
+        update_doc = {
+            "$set": {
+                "summary": summary,
+                "metadata": metadata,
+                "timestamp": datetime.datetime.utcnow()
+            }
+        }
+        collection.update_one(filter_doc, update_doc, upsert=True)
 
 def main():
     memory_manager = memoryManager()
