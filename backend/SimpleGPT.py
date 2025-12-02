@@ -5,6 +5,7 @@ from langchain_groq import ChatGroq
 from langchain_core.messages import SystemMessage, HumanMessage
 from langchain_core.tools import tool
 from langgraph.prebuilt import create_react_agent
+from MemoryManagment import memoryManager
 
 # Define the weather tool
 @tool
@@ -36,7 +37,7 @@ def get_weather(city: str) -> str:
 class SimpleGPT:
     def __init__(self):
         load_dotenv()
-    
+        self.memory_manager = memoryManager()
         api_key = os.getenv("GROQ_API_KEY")
         if not api_key:
             print("Error: GROQ_API_KEY not found in .env file")
@@ -53,9 +54,10 @@ class SimpleGPT:
         self.system_prompt = "You are a helpful and enthusiastic assistant. You always answer in a friendly tone."
         
     def generate_response(self, user_input):
+        msg=self.memory_manager.last10msg()+'\n'+user_input
         messages = [
             SystemMessage(content=self.system_prompt),
-            HumanMessage(content=user_input)
+            HumanMessage(content=msg)
         ]
         
         # The agent returns a dictionary with the state, including 'messages'
@@ -63,6 +65,7 @@ class SimpleGPT:
         
         # The last message in the list is the final response from the assistant
         last_message = result["messages"][-1]
+        self.memory_manager.storeMSG(user_input, last_message.content,last_message.response_metadata)
         return last_message
 
 def main():

@@ -1,3 +1,4 @@
+from typing import Optional
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 from fastapi.middleware.cors import CORSMiddleware
@@ -16,6 +17,7 @@ app.add_middleware(
 
 class ChatRequest(BaseModel):
     message: str
+    thread_id: Optional[str] = None
 
 class ChatResponse(BaseModel):
     response: str
@@ -28,12 +30,12 @@ except Exception as e:
     bot = None
 
 @app.post("/chat", response_model=ChatResponse)
-async def chat(request: ChatRequest):
+async def chat(request: ChatRequest):   # here we are giving the input by calling in the frontend files throught the api function takes the request
     if not bot:
         raise HTTPException(status_code=500, detail="Bot not initialized")
     
     try:
-        response_message = bot.generate_response(request.message)
+        response_message = bot.generate_response(request.message, thread_id=request.thread_id) #generating
         return ChatResponse(response=str(response_message.content))
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
