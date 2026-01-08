@@ -7,11 +7,12 @@ class STMManager:
     def __init__(self):
         # 1. Connect to PostgreSQL
         self.conn = psycopg2.connect(
-            host="localhost",
-            port=5433,
+            host="db.fqphwylufnxlproekqvp.supabase.co",
+            port=5432,
             database="postgres",
             user="postgres",
-            password="3115"
+            password="mai jinda hu",
+            sslmode="require"
         )
         self.cur = self.conn.cursor()
 
