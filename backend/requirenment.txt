@@ -1,8 +1,0 @@
-langchain-groq
-langchain-core
-python-dotenv
-langgraph
-requests
-fastapi
-uvicorn
-pymongo
