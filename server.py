@@ -1,44 +1,40 @@
-from fastapi import FastAPI, HTTPException
+# main.py
+from fastapi import FastAPI
 from pydantic import BaseModel
+from typing import Optional
 from GPTv2 import OllamaGpt
-import uvicorn
 
-# -------------------- APP --------------------
 app = FastAPI(
-    title="GPTv2 API",
-    description="FastAPI wrapper over Ollama Qwen2.5",
+    title="Ollama GPT API",
+    description="FastAPI backend for Qwen2.5 via Ollama",
     version="1.0.0"
 )
 
-# -------------------- MODEL --------------------
-bot = OllamaGpt()
+gpt = OllamaGpt()
 
-# -------------------- SCHEMAS --------------------
+
 class ChatRequest(BaseModel):
     message: str
+    thread_id: Optional[int] = None
+
 
 class ChatResponse(BaseModel):
-    reply: str
+    response: str
 
-# -------------------- ROUTES --------------------
-@app.get("/")
-def health_check():
-    return {"status": "ok", "model": "qwen2.5:3b"}
 
 @app.post("/chat", response_model=ChatResponse)
-def chat(req: ChatRequest):
-    try:
-        response = bot.generate_response(req.message)
-        return ChatResponse(reply=response)
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+def chat(request: ChatRequest):
+    reply = gpt.generate_response(request.message,request.thread_id)
+    return {"response": reply}
 
 
-# -------------------- RUN --------------------
+@app.get("/health")
+def health():
+    return {"status": "ok"}
+
+
+
+
 if __name__ == "__main__":
-    uvicorn.run(
-        "server:app",
-        host="0.0.0.0",
-        port=8000,
-        reload=True
-    )
+    import uvicorn
+    uvicorn.run(app, host="0.0.0.0", port=8000)
