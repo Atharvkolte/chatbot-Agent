@@ -3,7 +3,7 @@ from unittest import result
 from langchain_ollama import ChatOllama
 from langchain_core.messages import SystemMessage, HumanMessage
 from langchain.agents import create_agent
-from memroy_manager import STMManager
+from memory_manager import STMManager,LTMManager
 from tools import (
     get_weather,
 )
@@ -13,7 +13,7 @@ from tools import (
 class OllamaGpt:
     def __init__(self):
         self.llm = ChatOllama(
-            model="qwen3:8b",
+            model="qwen3:1.7b",
             temperature=0.7,
             #base_url="http://host.docker.internal:11434"
         )
@@ -32,6 +32,8 @@ class OllamaGpt:
             "- If the user said 'I live in X', always answer confidently.\n"
         )
         self.stm_manager = STMManager()
+        self.ltm_manager = LTMManager()
+        self.counterFacts=0
 
 
     def prompt_template(self, user_input: str, thread_id=0) -> str:
@@ -41,6 +43,9 @@ class OllamaGpt:
         prompt = f"""
             You are an AI assistant continuing an ongoing conversation.
 
+            USERS FACTS FROM PREVIOUS CONVORSATION:
+            {self.ltm_manager.rag_bm25ExtractFact(user_input, 5, 3)}
+            
             ### Conversation Summary (High-level, authoritative)
             {summary}
 
@@ -75,19 +80,23 @@ class OllamaGpt:
 
     def commandToExecute(self, user_input: str, response: str, thread_id=0):
         self.stm_manager.create_memory_table(user_input, response, thread_id)
+        self.counterFacts+=1
+        if self.counterFacts%5==0:
+            self.counterFacts=0
+            self.ltm_manager.extractFacts(thread_id)
 
 
 # -------------------- MAIN --------------------
 def main():
     bot = OllamaGpt()
-    print("🤖 OllamaGPT running with qwen2.5:3b")
+    print("🤖 OllamaGPT running with qwen3:4b")
 
     while True:
         user_input = input("You: ")
         if user_input.lower() in ["exit", "quit"]:
             break
 
-        response = bot.generate_response(user_input)
+        response = bot.generate_response(user_input,thread_id=0)
         print("Bot:", response)
         print("-" * 40)
 
