@@ -64,7 +64,7 @@ class LTMManager(LTMHelper):
             # port=5432,
             # database="postgres",
             # user="postgres",
-            # password="mai jinda hu",
+            # password="#####",
             # sslmode="require"
         )
         self.conn.autocommit = True
@@ -169,3 +169,4 @@ if __name__ == "__main__":
     obj=LTMManager()
     msg="hey tell me about cats"
     print(obj.extractFacts(msg))
+
