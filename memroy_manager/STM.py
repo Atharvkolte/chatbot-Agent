@@ -16,7 +16,7 @@ class STMManager:
             # port=5432,
             # database="postgres",
             # user="postgres",
-            # password="mai jinda hu",
+            # password="######",
             # sslmode="require"
         )
         self.conn.autocommit = True
@@ -155,3 +155,4 @@ if __name__ == "__main__":
     print(conversation_history)
     stm_manager.close()
     
+
